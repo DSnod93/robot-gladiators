@@ -13,7 +13,7 @@ var startGame = function () {
             // let player know what round they are in, remember that arrays start at 0 so it needs to have 1 added to it
             window.alert('Welcome to Robot Gladiators! Round ' + (i + 1));
 
-            // pick new enemy to fight based on the index of the enemy.names array
+            // call fight function with enemy robot
             var pickedEnemyObj = enemyInfo[i];
 
             // reset enemy.health before starting new fight
@@ -24,10 +24,21 @@ var startGame = function () {
         }
         // if player is not alive, break out of the loop and let endGame function run
         else {
+            window.alert("You have lost your robot in battle! Game Over!");
             break;
-        }
-    }
+        };
 
+        // if we're not the last enemy in the array
+        if (playerInfo.health > 0 && i < enemyInfo.length - 1) {
+            // ask if player wants to use the store before next round
+            var storeConfirm = window.confirm('The fight is over, visit the store before the next round?');
+
+            // if yes, take them to the store() function
+            if (storeConfirm) {
+                shop();
+            };
+        };
+    };
     // after loop ends, we are either out of playerInfo.health or enemies to fight, so run the endGame function
     endGame();
 };
@@ -101,60 +112,63 @@ var fightOrSkip = function () {
 // fight function (now with parameter for enemy's name)
 var fight = function (enemy) {
 
+    // keep track of who goes first
+    var isPlayerTurn = true;
 
-    // repeat and execute as long as the enemy-robot is alive 
-    while (enemy.health > 0 && playerInfo.health > 0) {
-        if (fightOrSkip()) {
-            // if true, leave fight by breaking loop
-            break;
-        }
-        var damage = randomNumber(playerInfo.attack - 3, playerInfo.attack);
+    if (Math.random() > 0.5) {
+        isPlayerTurn = false;
+    }
 
-        // generate random damage value based on player's attack power
-        enemy.health = Math.max(0, enemy.health - playerInfo.attack);
-        var damage = randomNumber(playerInfo.attack - 3, playerInfo.attack);
 
-        enemy.health = Math.max(0, enemy.health - damage);
-
-        // check enemy's health
-        if (enemy.health <= 0) {
-            window.alert(enemy.name + ' has died!');
-
-            // award player money for winning
-            playerInfo.money = playerInfo.money + 20;
-
-            // ask if player wants to use the store before next round
-            var storeConfirm = window.confirm('The fight is over, visit the store before the next round?');
-
-            // if yes, take them to the store() function
-            if (storeConfirm) {
-                shop();
+    while (playerInfo.health > 0 && enemy.health > 0) {
+        if (isPlayerTurn) {
+            // ask player if they'd like to fight or skip using the fightOrSkip function
+            if (fightOrSkip()) {
+                // if true, leave fight by breaking loop
+                break;
             }
 
-            // leave while() loop since enemy is dead
-            break;
+            // generate random damage value based on player's attack power
+            var damage = randomNumber(playerInfo.attack - 3, playerInfo.attack);
+            enemy.health = Math.max(0, enemy.health - damage);
+
+            // Log a resulting message to the console so we know that it worked
+            console.log(playerInfo.name + " attacked " + enemy.name + ". " + enemy.name + " now has " + enemy.health + " health remaining.");
+
+
+            // check enemy's health
+            if (enemy.health <= 0) {
+                window.alert(enemy.name + " has died!");
+
+                // award player money for winning
+                playerInfo.money = playerInfo.money + 20;
+
+                // leave while() loop since enemy is dead
+                break;
+            } else {
+                window.alert(enemy.name + " still has " + enemy.health + " health left.");
+            }
+            // player gets attacked first 
         } else {
-            window.alert(enemy.name + ' still has ' + enemy.health + ' health left.');
+            var damage = randomNumber(enemy.attack - 3, enemy.attack);
+            playerInfo.health = Math.max(0, playerInfo.health - damage);
+
+            // remove players's health by subtracting the amount set in the enemy.attack variable           
+            console.log(enemy.name + " attacked " + playerInfo.name + ". " + playerInfo.name + " now has " + playerInfo.health + " health remaining. ");
+
+            // check player's health
+            if (playerInfo.health <= 0) {
+                window.alert(playerInfo.name + " has died!");
+                // leave while() loop if player is dead
+                break;
+            } else {
+                window.alert(playerInfo.name + " still has " + playerInfo.health + " health left.");
+            }
         }
-
-        // remove players's health by subtracting the amount set in the enemy.attack variable
-        playerInfo.health = Math.max(0, playerInfo.health - enemy.attack);
-        var damage = randomNumber(enemy.attack - 3, enemy.attack);
-
-        playerInfo.health = Math.max(0, playerInfo.health - damage);
-
-        // check player's health
-        if (playerInfo.health <= 0) {
-            window.alert(playerInfo.Name + ' has died!');
-            // leave while() loop if player is dead
-            break;
-        } else {
-            window.alert(playerInfo.name + ' still has ' + playerInfo.health + ' health left.');
-        }
+        //switch turn order for next round
+        isPlayerTurn = !isPlayerTurn;
     }
 };
-
-
 
 
 
@@ -163,9 +177,9 @@ var shop = function () {
     // ask player what they'd like to do
     var shopOptionPrompt = window.prompt(
         'Would you like to REFILL your health, UPGRADE your attack, or LEAVE the store? Please enter one 1 for REFILL, 2 for UPGRADE, or 3 for LEAVE.'
-    ); 
+    );
 
-        shopOptionPrompt = parseInt(shopOptionPrompt);
+    shopOptionPrompt = parseInt(shopOptionPrompt);
 
     // use switch case to carry out action
     switch (shopOptionPrompt) {
